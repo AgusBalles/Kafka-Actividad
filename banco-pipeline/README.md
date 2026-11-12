@@ -17,7 +17,8 @@ banco-transacciones ──► Kafka Streams (PipelineTopology)
 
 1. Levantar Kafka (desde esta carpeta): `docker-compose up -d`
 2. Levantar la app: `.\mvnw.cmd spring-boot:run` (Windows) o `./mvnw spring-boot:run`
-3. La app corre en **http://localhost:8888** (el 8080 lo usa Kafka UI).
+3. La app corre en **http://localhost:8888** y Kafka UI en **http://localhost:8081**
+   (en esta PC el 8080 lo ocupa Oracle XE; si en la tuya está libre, podés volver a `"8080:8080"` en `docker-compose.yml`).
 
 ## Pruebas (PowerShell)
 
@@ -42,7 +43,7 @@ curl -X POST http://localhost:8888/api/banco/transaccion \
 
 ## Verificación visual
 
-En Kafka UI (http://localhost:8080) → Topics → `banco-alertas` → Messages:
+En Kafka UI (http://localhost:8081) → Topics → `banco-alertas` → Messages:
 
 ```json
 { "usuario": "juan", "monto": 15000.0, "motivo": "Transacción inusualmente alta en cajero", "severidad": "ALTA" }
@@ -53,4 +54,18 @@ En Kafka UI (http://localhost:8080) → Topics → `banco-alertas` → Messages:
 - Spring Boot 4 / Spring Kafka 4: se usa `JacksonJsonSerde` / `JacksonJsonSerializer` en vez de `JsonSerde` (deprecado).
 - Se agregó `@EnableKafkaStreams` en la clase principal (sin eso el pipeline no arranca).
 - Puerto 8888 en vez de 8080 (choca con Kafka UI).
+- `TopicsConfig` crea los topics al arrancar: Kafka Streams no crea el topic de entrada y, si
+  `banco-transacciones` no existe, el pipeline se detiene con `MissingSourceTopicException`.
+
+## Resultado de la prueba
+
+```
+✅ Transacción procesada: 500.0
+✅ Transacción procesada: 15000.0
+🚨 ALERTA GENERADA: Transacción inusualmente alta en cajero
+💰 Total acumulado de juan: 15500.0
+```
+
+La transacción de 5 no aparece (filtrada). El total por usuario se publica cada ~30 s
+(intervalo de commit de Kafka Streams), por eso aparece una sola vez con la suma de ambas.
 - Se implementaron el enriquecimiento (USD) y la agregación por usuario que pide el contexto de la guía y que el código de ejemplo no incluía.
