@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: kafka-tuning
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# Kafka UI ya usa el 8080 (y en esta PC también Oracle XE), por eso la app corre en el 8888
+server:
+  port: 8888
