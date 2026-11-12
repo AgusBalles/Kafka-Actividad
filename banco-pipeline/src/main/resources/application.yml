@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: banco-pipeline
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+    streams:
+      application-id: banco-pipeline-app  # ID único del Consumer Group de Streams
+      properties:
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.springframework.kafka.support.serializer.JacksonJsonSerde
+        spring.json.trusted.packages: "*"
+
+# Kafka UI ya usa el 8080, por eso la app corre en el 8888
+server:
+  port: 8888
